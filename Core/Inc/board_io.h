@@ -58,7 +58,7 @@ void BoardIO_SetBuzzerOutput(uint8_t active);
 void BoardIO_SetFanPwmPercent(uint8_t percent);
 void BoardIO_SetRs485Enable(uint8_t state);
 
-/* PC15 当前保持空闲预留，后续可作为 1kHz 运行心跳输出。 */
+/* PC15 作为 10Hz 运行心跳输出，用于外部 PLC 判断程序主循环是否正常运行。 */
 void BoardIO_SetRunHeartbeatOutput(uint8_t state);
 
 #ifdef __cplusplus

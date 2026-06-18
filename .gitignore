@@ -1,0 +1,18 @@
+# Keil 编译输出目录和中间文件
+MDK-ARM/Three-channel controller_v5.0/
+MDK-ARM/build.log
+MDK-ARM/*.lst
+MDK-ARM/*.map
+MDK-ARM/*.dep
+MDK-ARM/*.htm
+MDK-ARM/*.lnp
+MDK-ARM/*.bak
+MDK-ARM/*.uvguix.*
+
+# CubeMX 临时文件
+MXTmpFiles/
+*.mxproject.backup
+
+# Windows 本地文件
+Thumbs.db
+desktop.ini
