@@ -33,6 +33,8 @@ void AppController_Init(uint32_t tick_ms)
 
 void AppController_RunOnce(uint32_t tick_ms)
 {
+    SafetySnapshot_t safety_snapshot;
+
     InputFilter_Task(tick_ms);
     MaintenanceManager_Task(tick_ms);
     TemperatureManager_Task(tick_ms);
@@ -40,12 +42,13 @@ void AppController_RunOnce(uint32_t tick_ms)
     FeedbackMonitor_Task(tick_ms);
     SafetyManager_Task(tick_ms);
 
-    /* TODO: 按 APP_STATE_BOOT/LOGO/SELF_TEST/STANDBY/RUNNING/ALARM/ERROR 推进总状态机。 */
+    safety_snapshot = SafetyManager_GetSnapshot();
+    g_app_state = (safety_snapshot.any_fault_active != 0U) ? APP_STATE_ALARM : APP_STATE_STANDBY;
 
-    AlarmOutput_Task(tick_ms, SafetyManager_GetSnapshot());
+    AlarmOutput_Task(tick_ms, safety_snapshot);
     DisplayManager_Task(tick_ms,
                         FeedbackMonitor_GetSnapshot(),
-                        SafetyManager_GetSnapshot(),
+                        safety_snapshot,
                         TemperatureManager_GetSnapshot());
     WatchdogManager_Task(tick_ms);
 }
