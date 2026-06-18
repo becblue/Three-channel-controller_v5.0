@@ -34,15 +34,36 @@ void AppController_Init(uint32_t tick_ms)
 void AppController_RunOnce(uint32_t tick_ms)
 {
     SafetySnapshot_t safety_snapshot;
+    RelayDoneEvent_t relay_done_event;
+    ChannelRequest_t channel_request;
+    RelayCommand_t relay_command;
 
     InputFilter_Task(tick_ms);
     MaintenanceManager_Task(tick_ms);
     TemperatureManager_Task(tick_ms);
     RelayDriver_Task(tick_ms);
+
+    if (RelayDriver_TakeDoneEvent(&relay_done_event) != 0U)
+    {
+        FeedbackMonitor_HandleRelayDone(relay_done_event);
+    }
+
     FeedbackMonitor_Task(tick_ms);
     SafetyManager_Task(tick_ms);
 
     safety_snapshot = SafetyManager_GetSnapshot();
+
+    channel_request = ChannelRequest_Evaluate(InputFilter_GetSnapshot(),
+                                              FeedbackMonitor_GetSnapshot(),
+                                              RelayDriver_IsBusy(),
+                                              safety_snapshot.relay_action_allowed);
+    if (channel_request.valid != 0U)
+    {
+        relay_command.channel = channel_request.channel;
+        relay_command.action = channel_request.action;
+        (void)RelayDriver_Start(relay_command, tick_ms);
+    }
+
     g_app_state = (safety_snapshot.any_fault_active != 0U) ? APP_STATE_ALARM : APP_STATE_STANDBY;
 
     AlarmOutput_Task(tick_ms, safety_snapshot);

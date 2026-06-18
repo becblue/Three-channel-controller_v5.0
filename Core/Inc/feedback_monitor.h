@@ -7,6 +7,7 @@ extern "C" {
 
 #include <stdint.h>
 #include "app_types.h"
+#include "relay_driver.h"
 
 typedef struct
 {
@@ -18,6 +19,7 @@ typedef struct
 
 void FeedbackMonitor_Init(void);
 void FeedbackMonitor_Task(uint32_t tick_ms);
+void FeedbackMonitor_HandleRelayDone(RelayDoneEvent_t event);
 FeedbackSnapshot_t FeedbackMonitor_GetSnapshot(void);
 AppChannel_t FeedbackMonitor_GetOpenChannel(void);
 
