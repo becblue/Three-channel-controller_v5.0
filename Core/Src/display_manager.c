@@ -1,0 +1,25 @@
+#include "display_manager.h"
+
+static DisplayPage_t g_display_page;
+
+void DisplayManager_Init(void)
+{
+    g_display_page = DISPLAY_PAGE_LOGO;
+}
+
+void DisplayManager_Task(uint32_t tick_ms,
+                         FeedbackSnapshot_t feedback_snapshot,
+                         SafetySnapshot_t safety_snapshot,
+                         TemperatureSnapshot_t temperature_snapshot)
+{
+    (void)tick_ms;
+    (void)feedback_snapshot;
+    (void)safety_snapshot;
+    (void)temperature_snapshot;
+    /* TODO: 实现 128x64 OLED 页面和脏区刷新。 */
+}
+
+void DisplayManager_SetPage(DisplayPage_t page)
+{
+    g_display_page = page;
+}
