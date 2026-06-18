@@ -46,6 +46,8 @@ static const NtcTablePoint_t g_ntc_table[] = {
 
 static TemperatureSnapshot_t g_temperature_snapshot;
 static TempConfirmState_t g_temp_confirm[TEMP_CHANNEL_COUNT];
+static uint8_t g_ntc_abnormal_latched[TEMP_CHANNEL_COUNT];
+static uint8_t g_ntc_normal_count[TEMP_CHANNEL_COUNT];
 static uint32_t g_last_sample_tick_ms;
 static uint8_t g_fan_high_latched;
 
@@ -170,6 +172,33 @@ static void TemperatureManager_SetTempByChannel(uint8_t channel_index, int16_t t
     }
 }
 
+static uint8_t TemperatureManager_UpdateNtcAbnormalLatch(uint8_t channel_index, uint8_t sensor_abnormal)
+{
+    if (sensor_abnormal != 0U)
+    {
+        g_ntc_abnormal_latched[channel_index] = 1U;
+        g_ntc_normal_count[channel_index] = 0U;
+    }
+    else if (g_ntc_abnormal_latched[channel_index] != 0U)
+    {
+        if (g_ntc_normal_count[channel_index] < APP_TEMP_CONFIRM_COUNT)
+        {
+            g_ntc_normal_count[channel_index]++;
+        }
+
+        if (g_ntc_normal_count[channel_index] >= APP_TEMP_CONFIRM_COUNT)
+        {
+            g_ntc_abnormal_latched[channel_index] = 0U;
+        }
+    }
+    else
+    {
+        g_ntc_normal_count[channel_index] = 0U;
+    }
+
+    return g_ntc_abnormal_latched[channel_index];
+}
+
 void TemperatureManager_Init(void)
 {
     uint8_t index;
@@ -191,6 +220,8 @@ void TemperatureManager_Init(void)
         g_temp_confirm[index].set_count = 0U;
         g_temp_confirm[index].clear_count = 0U;
         g_temp_confirm[index].active = 0U;
+        g_ntc_abnormal_latched[index] = 0U;
+        g_ntc_normal_count[index] = 0U;
     }
 }
 
@@ -212,12 +243,13 @@ void TemperatureManager_Task(uint32_t tick_ms)
     {
         uint8_t sensor_abnormal;
         int16_t temp_c = TemperatureManager_AdcToTempC(TemperatureManager_ReadAdcRaw(index), &sensor_abnormal);
+        uint8_t sensor_abnormal_latched = TemperatureManager_UpdateNtcAbnormalLatch(index, sensor_abnormal);
         uint8_t set_condition;
         uint8_t clear_condition;
 
         TemperatureManager_SetTempByChannel(index, temp_c);
 
-        if (sensor_abnormal != 0U)
+        if (sensor_abnormal_latched != 0U)
         {
             any_sensor_abnormal = 1U;
         }
@@ -230,8 +262,8 @@ void TemperatureManager_Task(uint32_t tick_ms)
             }
         }
 
-        set_condition = ((sensor_abnormal != 0U) || (temp_c >= APP_TEMP_ALARM_SET_C)) ? 1U : 0U;
-        clear_condition = ((sensor_abnormal == 0U) && (temp_c <= APP_TEMP_ALARM_CLEAR_C)) ? 1U : 0U;
+        set_condition = ((sensor_abnormal_latched != 0U) || (temp_c >= APP_TEMP_ALARM_SET_C)) ? 1U : 0U;
+        clear_condition = ((sensor_abnormal_latched == 0U) && (temp_c <= APP_TEMP_ALARM_CLEAR_C)) ? 1U : 0U;
         TemperatureManager_UpdateConfirm(index, set_condition, clear_condition);
         TemperatureManager_SetFaultByChannel(index, g_temp_confirm[index].active);
     }
