@@ -2,13 +2,17 @@
 
 #include "app_config.h"
 #include "board_io.h"
+#include "main.h"
 
 #define TEMP_CHANNEL_COUNT              3U
 #define NTC_ADC_MAX                     4095U
-#define NTC_ADC_OPEN_THRESHOLD          4080U
-#define NTC_ADC_SHORT_THRESHOLD         15U
+#define NTC_ADC_OPEN_THRESHOLD          3900U
+#define NTC_ADC_SHORT_THRESHOLD         200U
+#define NTC_ADC_FLOAT_DELTA_THRESHOLD   250U
 #define NTC_TEMP_INVALID_C              999
 #define NTC_TABLE_SIZE                  ((uint8_t)(sizeof(g_ntc_table) / sizeof(g_ntc_table[0])))
+#define FAN_PULSE_PER_REV               2U
+#define FAN_RPM_UPDATE_MS               1000U
 
 typedef struct
 {
@@ -48,8 +52,12 @@ static TemperatureSnapshot_t g_temperature_snapshot;
 static TempConfirmState_t g_temp_confirm[TEMP_CHANNEL_COUNT];
 static uint8_t g_ntc_abnormal_latched[TEMP_CHANNEL_COUNT];
 static uint8_t g_ntc_normal_count[TEMP_CHANNEL_COUNT];
+static uint16_t g_last_adc_raw[TEMP_CHANNEL_COUNT];
+static uint8_t g_last_adc_valid[TEMP_CHANNEL_COUNT];
 static uint32_t g_last_sample_tick_ms;
+static uint32_t g_last_fan_rpm_tick_ms;
 static uint8_t g_fan_high_latched;
+static volatile uint32_t g_fan_pulse_count;
 
 static uint16_t TemperatureManager_ReadAdcRaw(uint8_t channel_index)
 {
@@ -101,6 +109,25 @@ static int16_t TemperatureManager_AdcToTempC(uint16_t adc_raw, uint8_t *sensor_a
     }
 
     return g_ntc_table[NTC_TABLE_SIZE - 1U].temp_c;
+}
+
+static uint8_t TemperatureManager_IsAdcFloating(uint8_t channel_index, uint16_t adc_raw)
+{
+    uint16_t last_raw = g_last_adc_raw[channel_index];
+    uint16_t delta;
+
+    if (g_last_adc_valid[channel_index] == 0U)
+    {
+        g_last_adc_raw[channel_index] = adc_raw;
+        g_last_adc_valid[channel_index] = 1U;
+        return 0U;
+    }
+
+    delta = (adc_raw > last_raw) ? (uint16_t)(adc_raw - last_raw) : (uint16_t)(last_raw - adc_raw);
+    g_last_adc_raw[channel_index] = adc_raw;
+
+    /* NTC 断线后 ADC 可能漂浮在中间值，不能只靠 0/满量程判断。 */
+    return (delta >= NTC_ADC_FLOAT_DELTA_THRESHOLD) ? 1U : 0U;
 }
 
 static void TemperatureManager_UpdateConfirm(uint8_t channel_index, uint8_t set_condition, uint8_t clear_condition)
@@ -172,6 +199,36 @@ static void TemperatureManager_SetTempByChannel(uint8_t channel_index, int16_t t
     }
 }
 
+static uint8_t TemperatureManager_HasTempFaultActive(void)
+{
+    if ((g_temperature_snapshot.fault_k_active != 0U) ||
+        (g_temperature_snapshot.fault_l_active != 0U) ||
+        (g_temperature_snapshot.fault_m_active != 0U))
+    {
+        return 1U;
+    }
+
+    return 0U;
+}
+
+static void TemperatureManager_UpdateFanSpeed(uint32_t tick_ms)
+{
+    uint32_t pulse_count;
+
+    if ((tick_ms - g_last_fan_rpm_tick_ms) < FAN_RPM_UPDATE_MS)
+    {
+        return;
+    }
+
+    g_last_fan_rpm_tick_ms = tick_ms;
+    __disable_irq();
+    pulse_count = g_fan_pulse_count;
+    g_fan_pulse_count = 0U;
+    __enable_irq();
+
+    g_temperature_snapshot.fan_rpm = (uint16_t)((pulse_count * 60U) / FAN_PULSE_PER_REV);
+}
+
 static uint8_t TemperatureManager_UpdateNtcAbnormalLatch(uint8_t channel_index, uint8_t sensor_abnormal)
 {
     if (sensor_abnormal != 0U)
@@ -207,13 +264,16 @@ void TemperatureManager_Init(void)
     g_temperature_snapshot.ntc2_c = 0;
     g_temperature_snapshot.ntc3_c = 0;
     g_temperature_snapshot.fan_pwm_percent = APP_FAN_PWM_LOW_PERCENT;
+    g_temperature_snapshot.fan_rpm = 0U;
     g_temperature_snapshot.fault_k_active = 0U;
     g_temperature_snapshot.fault_l_active = 0U;
     g_temperature_snapshot.fault_m_active = 0U;
     g_temperature_snapshot.ntc_sensor_abnormal = 0U;
     g_temperature_snapshot.fan_tach_abnormal = 0U;
     g_last_sample_tick_ms = 0U;
+    g_last_fan_rpm_tick_ms = 0U;
     g_fan_high_latched = 0U;
+    g_fan_pulse_count = 0U;
 
     for (index = 0U; index < TEMP_CHANNEL_COUNT; index++)
     {
@@ -222,6 +282,8 @@ void TemperatureManager_Init(void)
         g_temp_confirm[index].active = 0U;
         g_ntc_abnormal_latched[index] = 0U;
         g_ntc_normal_count[index] = 0U;
+        g_last_adc_raw[index] = 0U;
+        g_last_adc_valid[index] = 0U;
     }
 }
 
@@ -232,6 +294,8 @@ void TemperatureManager_Task(uint32_t tick_ms)
     uint8_t max_temp_valid = 0U;
     int16_t max_temp_c = -100;
 
+    TemperatureManager_UpdateFanSpeed(tick_ms);
+
     if ((tick_ms - g_last_sample_tick_ms) < APP_TEMP_CONFIRM_PERIOD_MS)
     {
         return;
@@ -241,11 +305,18 @@ void TemperatureManager_Task(uint32_t tick_ms)
 
     for (index = 0U; index < TEMP_CHANNEL_COUNT; index++)
     {
+        uint16_t adc_raw = TemperatureManager_ReadAdcRaw(index);
         uint8_t sensor_abnormal;
-        int16_t temp_c = TemperatureManager_AdcToTempC(TemperatureManager_ReadAdcRaw(index), &sensor_abnormal);
+        int16_t temp_c = TemperatureManager_AdcToTempC(adc_raw, &sensor_abnormal);
         uint8_t sensor_abnormal_latched = TemperatureManager_UpdateNtcAbnormalLatch(index, sensor_abnormal);
         uint8_t set_condition;
         uint8_t clear_condition;
+
+        if (TemperatureManager_IsAdcFloating(index, adc_raw) != 0U)
+        {
+            sensor_abnormal_latched = TemperatureManager_UpdateNtcAbnormalLatch(index, 1U);
+            temp_c = NTC_TEMP_INVALID_C;
+        }
 
         TemperatureManager_SetTempByChannel(index, temp_c);
 
@@ -270,7 +341,7 @@ void TemperatureManager_Task(uint32_t tick_ms)
 
     g_temperature_snapshot.ntc_sensor_abnormal = any_sensor_abnormal;
 
-    if (any_sensor_abnormal != 0U)
+    if ((any_sensor_abnormal != 0U) || (TemperatureManager_HasTempFaultActive() != 0U))
     {
         g_fan_high_latched = 1U;
     }
@@ -290,4 +361,12 @@ void TemperatureManager_Task(uint32_t tick_ms)
 TemperatureSnapshot_t TemperatureManager_GetSnapshot(void)
 {
     return g_temperature_snapshot;
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == FAN_SEN_Pin)
+    {
+        g_fan_pulse_count++;
+    }
 }

@@ -17,6 +17,7 @@ void OledDriver_ForceRefresh(void);
 void OledDriver_RefreshDirty(void);
 void OledDriver_ClearArea(uint8_t x, uint8_t page, uint8_t width, uint8_t page_count);
 void OledDriver_DrawString(uint8_t x, uint8_t page, const char *text, uint8_t invert);
+void OledDriver_DrawBitmapRows(uint8_t x, uint8_t y, uint8_t width, uint8_t height, const uint8_t *data);
 void OledDriver_DrawFrame(uint8_t x, uint8_t y, uint8_t width, uint8_t height);
 void OledDriver_FillRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color);
 

@@ -13,6 +13,7 @@ typedef struct
     int16_t ntc2_c;
     int16_t ntc3_c;
     uint8_t fan_pwm_percent;
+    uint16_t fan_rpm;
     uint8_t fault_k_active;
     uint8_t fault_l_active;
     uint8_t fault_m_active;

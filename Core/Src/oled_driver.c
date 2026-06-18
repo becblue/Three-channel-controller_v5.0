@@ -268,6 +268,38 @@ void OledDriver_DrawString(uint8_t x, uint8_t page, const char *text, uint8_t in
     }
 }
 
+void OledDriver_DrawBitmapRows(uint8_t x, uint8_t y, uint8_t width, uint8_t height, const uint8_t *data)
+{
+    uint16_t bytes_per_row = (uint16_t)((width + 7U) / 8U);
+    uint8_t row;
+
+    for (row = 0U; row < height; row++)
+    {
+        uint16_t col_byte;
+
+        for (col_byte = 0U; col_byte < bytes_per_row; col_byte++)
+        {
+            uint8_t bit;
+            uint8_t data_byte = data[(uint16_t)row * bytes_per_row + col_byte];
+
+            for (bit = 0U; bit < 8U; bit++)
+            {
+                uint8_t pixel_x = (uint8_t)(x + (uint8_t)(col_byte * 8U) + bit);
+                uint8_t pixel_y = (uint8_t)(y + row);
+                uint8_t color;
+
+                if (((uint16_t)col_byte * 8U + bit) >= width)
+                {
+                    continue;
+                }
+
+                color = ((data_byte & (uint8_t)(0x80U >> bit)) != 0U) ? 1U : 0U;
+                OledDriver_FillRect(pixel_x, pixel_y, 1U, 1U, color);
+            }
+        }
+    }
+}
+
 void OledDriver_FillRect(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t color)
 {
     uint8_t px;

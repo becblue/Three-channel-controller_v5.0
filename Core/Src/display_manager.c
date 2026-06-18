@@ -9,6 +9,65 @@
 #define DISPLAY_REFRESH_MS       250U
 #define DISPLAY_ALARM_ROTATE_MS  1000U
 
+static const uint8_t g_logo_large[27][16] = {
+    {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0x00,0x7F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFC},
+    {0x01,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFC},
+    {0x07,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFC},
+    {0x0F,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFC},
+    {0x1F,0xFF,0xF0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0x3F,0xFF,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0x3F,0xFF,0x80,0x01,0xFF,0x01,0xE7,0x3C,0x3C,0x0F,0x0F,0x00,0x7F,0xF8,0x7F,0xC0},
+    {0x7F,0xFF,0x00,0x03,0xFF,0xC1,0xE7,0x7C,0x7C,0x0F,0x0F,0x00,0x7F,0xF8,0x7F,0xF8},
+    {0x7F,0xFF,0x00,0x03,0xFF,0xE1,0xE6,0x7C,0x7C,0x0F,0x0F,0x00,0x7F,0xF8,0x7F,0xF8},
+    {0x7F,0xFE,0x00,0x03,0xFF,0xE1,0xE6,0x78,0x78,0x1F,0x1F,0x00,0x7F,0xF8,0x7F,0xFC},
+    {0x7F,0xFE,0x00,0x03,0xC3,0xE3,0xE6,0x78,0x78,0x1F,0x1F,0x00,0x78,0x00,0xF8,0x7C},
+    {0xFF,0xFE,0x00,0x03,0xC1,0xE3,0xEE,0x78,0x78,0x1F,0x1F,0x00,0x78,0x00,0xF8,0x3C},
+    {0x7F,0xFE,0x00,0x03,0xC3,0xC3,0xE0,0x78,0x78,0x1E,0x1E,0x00,0xF8,0x00,0xF8,0x3C},
+    {0x7F,0xFE,0x00,0x03,0xFF,0xC3,0xC0,0xF8,0xFF,0xFE,0x1E,0x00,0xFF,0xF0,0xF0,0x7C},
+    {0x7F,0xFE,0x00,0x07,0xFF,0x03,0xC0,0xF8,0xFF,0xFE,0x1E,0x00,0xFF,0xF0,0xFF,0xF8},
+    {0x7F,0xFE,0x00,0x07,0xFF,0x83,0xC0,0xF8,0xFF,0xFE,0x1E,0x00,0xFF,0xE0,0xFF,0xF0},
+    {0x3F,0xFF,0x00,0x07,0xC7,0xC3,0xC0,0xF0,0xFF,0xFE,0x3E,0x00,0xFB,0xE0,0xFF,0xE0},
+    {0x3F,0xFF,0x80,0x07,0x83,0xC3,0xC0,0xF0,0xF0,0x3E,0x3E,0x00,0xF0,0x01,0xFF,0xC0},
+    {0x1F,0xFF,0x80,0x07,0x83,0xC3,0xC1,0xF0,0xF0,0x3E,0x3E,0x00,0xF0,0x01,0xF3,0xE0},
+    {0x0F,0xFF,0xE0,0x07,0x87,0xC3,0xF3,0xE0,0xF0,0x3C,0x3F,0xF9,0xFF,0xE1,0xF3,0xE0},
+    {0x07,0xFF,0xF8,0x07,0xFF,0xC3,0xFF,0xE1,0xF0,0x3C,0x3F,0xF9,0xFF,0xE1,0xE1,0xF0},
+    {0x01,0xFF,0xF8,0x0F,0xFF,0x81,0xFF,0xC1,0xF0,0x3C,0x3F,0xF9,0xFF,0xE1,0xE1,0xF0},
+    {0x00,0x7F,0xF8,0x0F,0xFF,0x00,0xFF,0x81,0xF0,0x7C,0x3F,0xF9,0xFF,0xE1,0xE0,0xF8},
+    {0x00,0x00,0x00,0x00,0x00,0x00,0x18,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
+    {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
+};
+
+static const uint8_t g_logo_small[] = {
+0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X1C,
+0X00,0X0C,0X08,0X30,0X00,0X63,0X00,0X00,0XC0,0X00,0X00,0X00,0X00,0X1F,0X3E,0X00,
+0X1F,0X0C,0X78,0X00,0X63,0X80,0X01,0XCF,0XFF,0XF1,0XFF,0XFC,0X00,0X36,0X00,0X3F,
+0X0C,0X7C,0X00,0X61,0X80,0X01,0X8F,0XFF,0XF1,0XFF,0XFE,0X00,0X33,0X00,0X33,0X0C,
+0X6C,0X00,0X60,0XC0,0X03,0X8C,0X00,0X01,0X80,0X07,0X1F,0X33,0X00,0X33,0X0C,0X6E,
+0X00,0X60,0XC0,0X07,0X0C,0X00,0X01,0X80,0X03,0X00,0X33,0X00,0X63,0X0C,0X66,0X00,
+0X60,0X60,0X06,0X0C,0X00,0X01,0X80,0X03,0X80,0X33,0X80,0X63,0X0C,0X67,0X00,0X60,
+0X20,0X0E,0X0C,0X00,0X01,0X80,0X01,0X80,0X31,0X80,0X63,0X0C,0X63,0X00,0X60,0X30,
+0X1C,0X0C,0X00,0X01,0X80,0X01,0X9F,0X31,0X80,0XE3,0X0C,0X63,0X80,0X60,0X38,0X18,
+0X0C,0X00,0X01,0X80,0X01,0X80,0X31,0XC0,0XC3,0X0C,0X61,0X80,0X60,0X18,0X38,0X0C,
+0X00,0X01,0X80,0X03,0X8E,0X30,0XC0,0XC3,0X0C,0X61,0XC0,0X60,0X1C,0X70,0X0C,0X00,
+0X01,0X80,0X03,0X00,0X30,0XC0,0XC3,0X0C,0X60,0XC0,0X60,0X0E,0X60,0X0C,0X00,0X01,
+0X80,0X0F,0X1F,0X30,0XC1,0X83,0X0C,0X60,0XE0,0X60,0X06,0XE0,0X0C,0XFF,0XE1,0XBF,
+0XFE,0X00,0X30,0X61,0X83,0X0C,0X60,0X70,0X60,0X03,0X80,0X0C,0X00,0X01,0X80,0X00,
+0X18,0X30,0X63,0X83,0X0C,0X60,0X30,0X60,0X00,0X00,0X0C,0X00,0X01,0X80,0X30,0X00,
+0X30,0X73,0X03,0X0C,0X60,0X38,0X60,0X01,0X00,0X0C,0X00,0X01,0X80,0X38,0X01,0X30,
+0X33,0X03,0X0C,0X60,0X18,0X60,0X01,0X80,0X0C,0X00,0X01,0X80,0X18,0X04,0X30,0X37,
+0X03,0X0C,0X60,0X1C,0X60,0X01,0X80,0X0C,0X00,0X01,0X80,0X0C,0X10,0X30,0X36,0X03,
+0X0C,0X60,0X0C,0X60,0X01,0X80,0X0C,0X00,0X01,0X80,0X0E,0X00,0X30,0X16,0X03,0X0C,
+0X60,0X0E,0X60,0X01,0X80,0X0C,0X00,0X01,0X80,0X06,0X00,0X30,0X1E,0X03,0X0C,0X60,
+0X06,0X60,0X01,0X80,0X0C,0X00,0X01,0X80,0X07,0X04,0X30,0X1C,0X03,0X0C,0X60,0X07,
+0X60,0X01,0X80,0X0C,0X00,0X01,0X80,0X03,0X10,0X30,0X1C,0X03,0X0C,0X60,0X03,0XE0,
+0X01,0X80,0X0F,0XFF,0XF9,0X80,0X01,0X80,0X30,0X00,0X03,0X0C,0X60,0X03,0XE0,0X01,
+0X80,0X07,0XFF,0XF9,0X80,0X01,0X9C,0X20,0X00,0X02,0X08,0X20,0X00,0X00,0X01,0X00,
+0X00,0X00,0X01,0X00,0X00,0X80,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,0X00,
+0X00,0X00,0X00,0X00,0X00
+};
+
 static DisplayPage_t g_display_page;
 static uint32_t g_display_start_tick_ms;
 static uint32_t g_last_refresh_tick_ms;
@@ -147,9 +206,28 @@ static AppFaultId_t DisplayManager_SelectFault(uint32_t tick_ms, SafetySnapshot_
 static void DisplayManager_DrawLogo(void)
 {
     OledDriver_ClearArea(0U, 0U, OLED_WIDTH, OLED_PAGE_COUNT);
-    OledDriver_DrawString(46U, 2U, "MINYER", 0U);
-    OledDriver_DrawString(25U, 4U, "3CH CTRL V5", 0U);
+    OledDriver_DrawBitmapRows(0U, 18U, 128U, 27U, &g_logo_large[0][0]);
     OledDriver_RefreshDirty();
+}
+
+static const char *DisplayManager_GetSelfTestStepText(uint8_t percent)
+{
+    if (percent < 25U)
+    {
+        return "IO CHECK";
+    }
+
+    if (percent < 50U)
+    {
+        return "FB CHECK";
+    }
+
+    if (percent < 75U)
+    {
+        return "TEMP CHECK";
+    }
+
+    return "READY";
 }
 
 static void DisplayManager_DrawSelfTest(uint32_t tick_ms)
@@ -157,7 +235,7 @@ static void DisplayManager_DrawSelfTest(uint32_t tick_ms)
     uint32_t elapsed_ms = tick_ms - (g_display_start_tick_ms + DISPLAY_LOGO_MS);
     uint8_t percent;
     uint8_t fill_width;
-    char line[20];
+    const char *step_text;
 
     if (elapsed_ms > DISPLAY_SELF_TEST_MS)
     {
@@ -166,49 +244,49 @@ static void DisplayManager_DrawSelfTest(uint32_t tick_ms)
 
     percent = (uint8_t)((elapsed_ms * 100U) / DISPLAY_SELF_TEST_MS);
     fill_width = (uint8_t)((percent * 116U) / 100U);
+    step_text = DisplayManager_GetSelfTestStepText(percent);
 
     OledDriver_ClearArea(0U, 0U, OLED_WIDTH, OLED_PAGE_COUNT);
-    OledDriver_DrawString(46U, 0U, "MINYER", 0U);
-    OledDriver_DrawString(30U, 2U, "SELF TEST", 0U);
-    OledDriver_DrawFrame(5U, 38U, 118U, 10U);
-    OledDriver_FillRect(6U, 39U, fill_width, 8U, 1U);
-    (void)snprintf(line, sizeof(line), "STEP %03u", percent);
-    OledDriver_DrawString(37U, 6U, line, 0U);
+    OledDriver_DrawBitmapRows(6U, 1U, 115U, 27U, g_logo_small);
+    OledDriver_DrawFrame(5U, 36U, 118U, 9U);
+    OledDriver_FillRect(6U, 37U, fill_width, 7U, 1U);
+    OledDriver_DrawString(37U, 6U, step_text, 0U);
     OledDriver_RefreshDirty();
 }
 
 static void DisplayManager_DrawChannelBox(uint8_t index, AppChannelState_t state)
 {
-    uint8_t x = (uint8_t)(index * 42U);
+    static const uint8_t box_x[3] = {0U, 44U, 88U};
+    uint8_t x = box_x[index];
     char title[5];
     const char *state_text = DisplayManager_GetChannelShortText(state);
-    uint8_t invert = (state == APP_CHANNEL_STATE_OPEN) ? 1U : 0U;
+    uint8_t open = (state == APP_CHANNEL_STATE_OPEN) ? 1U : 0U;
+    uint8_t state_text_x = (state == APP_CHANNEL_STATE_OPEN) ? 14U : 11U;
 
-    OledDriver_DrawFrame(x, 16U, 42U, 18U);
+    if (open != 0U)
+    {
+        OledDriver_FillRect(x, 16U, 40U, 23U, 1U);
+    }
+    else
+    {
+        OledDriver_DrawFrame(x, 16U, 40U, 23U);
+    }
+
     (void)snprintf(title, sizeof(title), "CH%u", (uint8_t)(index + 1U));
-    OledDriver_DrawString((uint8_t)(x + 10U), 2U, title, invert);
-    OledDriver_DrawString((uint8_t)(x + 8U), 3U, state_text, invert);
+    OledDriver_DrawString((uint8_t)(x + 11U), 2U, title, open);
+    OledDriver_DrawString((uint8_t)(x + state_text_x), 3U, state_text, open);
 }
 
 static void DisplayManager_DrawTemperatureLine(TemperatureSnapshot_t temperature_snapshot)
 {
     char line[24];
 
-    if (temperature_snapshot.ntc_sensor_abnormal != 0U)
-    {
-        (void)snprintf(line, sizeof(line), "T1:%03d T2:%03d", temperature_snapshot.ntc1_c, temperature_snapshot.ntc2_c);
-        OledDriver_DrawString(0U, 5U, line, 0U);
-        (void)snprintf(line, sizeof(line), "T3:%03d FAN:%02u%%", temperature_snapshot.ntc3_c, temperature_snapshot.fan_pwm_percent);
-        OledDriver_DrawString(0U, 6U, line, 0U);
-        OledDriver_DrawString(0U, 7U, "NTC ERR", 0U);
-    }
-    else
-    {
-        (void)snprintf(line, sizeof(line), "T1:%02d T2:%02d T3:%02d", temperature_snapshot.ntc1_c, temperature_snapshot.ntc2_c, temperature_snapshot.ntc3_c);
-        OledDriver_DrawString(0U, 5U, line, 0U);
-        (void)snprintf(line, sizeof(line), "FAN:%02u%%", temperature_snapshot.fan_pwm_percent);
-        OledDriver_DrawString(0U, 7U, line, 0U);
-    }
+    (void)snprintf(line, sizeof(line), "T1:%03d T2:%03d", temperature_snapshot.ntc1_c, temperature_snapshot.ntc2_c);
+    OledDriver_DrawString(0U, 5U, line, 0U);
+    (void)snprintf(line, sizeof(line), "T3:%03d", temperature_snapshot.ntc3_c);
+    OledDriver_DrawString(0U, 6U, line, 0U);
+    (void)snprintf(line, sizeof(line), "FAN:%02u%% %04uRPM", temperature_snapshot.fan_pwm_percent, temperature_snapshot.fan_rpm);
+    OledDriver_DrawString(0U, 7U, line, 0U);
 }
 
 static void DisplayManager_DrawMain(uint32_t tick_ms,
@@ -230,6 +308,11 @@ static void DisplayManager_DrawMain(uint32_t tick_ms,
     else
     {
         OledDriver_DrawString(0U, 0U, "SYS OK", 0U);
+    }
+
+    if (temperature_snapshot.ntc_sensor_abnormal != 0U)
+    {
+        OledDriver_DrawString(86U, 0U, "NTC ERR", 0U);
     }
 
     DisplayManager_DrawChannelBox(0U, DisplayManager_GetChannelState(feedback_snapshot, APP_CHANNEL_1));
