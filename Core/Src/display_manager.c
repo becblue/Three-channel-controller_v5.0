@@ -256,7 +256,7 @@ static void DisplayManager_DrawSelfTest(uint32_t tick_ms)
 
 static void DisplayManager_DrawChannelBox(uint8_t index, AppChannelState_t state)
 {
-    static const uint8_t box_x[3] = {0U, 44U, 88U};
+    static const uint8_t box_x[3] = {2U, 45U, 88U};
     uint8_t x = box_x[index];
     char title[5];
     const char *state_text = DisplayManager_GetChannelShortText(state);
@@ -265,25 +265,20 @@ static void DisplayManager_DrawChannelBox(uint8_t index, AppChannelState_t state
 
     if (open != 0U)
     {
-        OledDriver_FillRect(x, 16U, 40U, 23U, 1U);
-    }
-    else
-    {
-        OledDriver_DrawFrame(x, 16U, 40U, 23U);
+        OledDriver_FillRect(x, 22U, 38U, 18U, 1U);
+        OledDriver_DrawFrame(x, 22U, 38U, 18U);
     }
 
     (void)snprintf(title, sizeof(title), "CH%u", (uint8_t)(index + 1U));
-    OledDriver_DrawString((uint8_t)(x + 11U), 2U, title, open);
-    OledDriver_DrawString((uint8_t)(x + state_text_x), 3U, state_text, open);
+    OledDriver_DrawString((uint8_t)(x + 10U), 3U, title, open);
+    OledDriver_DrawString((uint8_t)(x + state_text_x), 4U, state_text, open);
 }
 
 static void DisplayManager_DrawTemperatureLine(TemperatureSnapshot_t temperature_snapshot)
 {
     char line[24];
 
-    (void)snprintf(line, sizeof(line), "T1:%03d T2:%03d", temperature_snapshot.ntc1_c, temperature_snapshot.ntc2_c);
-    OledDriver_DrawString(0U, 5U, line, 0U);
-    (void)snprintf(line, sizeof(line), "T3:%03d", temperature_snapshot.ntc3_c);
+    (void)snprintf(line, sizeof(line), "T1:%03d T2:%03d T3:%03d", temperature_snapshot.ntc1_c, temperature_snapshot.ntc2_c, temperature_snapshot.ntc3_c);
     OledDriver_DrawString(0U, 6U, line, 0U);
     (void)snprintf(line, sizeof(line), "FAN:%02u%% %04uRPM", temperature_snapshot.fan_pwm_percent, temperature_snapshot.fan_rpm);
     OledDriver_DrawString(0U, 7U, line, 0U);
@@ -298,6 +293,8 @@ static void DisplayManager_DrawMain(uint32_t tick_ms,
     char alarm_line[20];
 
     OledDriver_ClearArea(0U, 0U, OLED_WIDTH, OLED_PAGE_COUNT);
+    OledDriver_FillRect(0U, 17U, OLED_WIDTH, 1U, 1U);
+    OledDriver_FillRect(0U, 43U, OLED_WIDTH, 1U, 1U);
 
     if (safety_snapshot.any_fault_active != 0U)
     {
@@ -312,7 +309,7 @@ static void DisplayManager_DrawMain(uint32_t tick_ms,
 
     if (temperature_snapshot.ntc_sensor_abnormal != 0U)
     {
-        OledDriver_DrawString(86U, 0U, "NTC ERR", 0U);
+        OledDriver_DrawString(86U, 1U, "NTC ERR", 0U);
     }
 
     DisplayManager_DrawChannelBox(0U, DisplayManager_GetChannelState(feedback_snapshot, APP_CHANNEL_1));
