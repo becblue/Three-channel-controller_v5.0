@@ -2,6 +2,7 @@
 
 #include "feedback_monitor.h"
 #include "input_filter.h"
+#include "temperature_manager.h"
 
 static SafetySnapshot_t g_safety_snapshot;
 
@@ -148,6 +149,7 @@ void SafetyManager_Task(uint32_t tick_ms)
 {
     InputFilterSnapshot_t input_snapshot = InputFilter_GetSnapshot();
     FeedbackSnapshot_t feedback_snapshot = FeedbackMonitor_GetSnapshot();
+    TemperatureSnapshot_t temperature_snapshot = TemperatureManager_GetSnapshot();
     uint8_t active_count = SafetyManager_GetInputActiveCount(input_snapshot);
     AppChannel_t input_channel = SafetyManager_GetInputChannel(input_snapshot);
     AppChannel_t open_channel = SafetyManager_GetOpenChannel(feedback_snapshot);
@@ -182,6 +184,33 @@ void SafetyManager_Task(uint32_t tick_ms)
     }
 
     SafetyManager_UpdateFeedbackFaults(feedback_snapshot.fault_mask_b_to_j);
+
+    if (temperature_snapshot.fault_k_active != 0U)
+    {
+        SafetyManager_SetFault(APP_FAULT_K);
+    }
+    else
+    {
+        SafetyManager_ClearFault(APP_FAULT_K);
+    }
+
+    if (temperature_snapshot.fault_l_active != 0U)
+    {
+        SafetyManager_SetFault(APP_FAULT_L);
+    }
+    else
+    {
+        SafetyManager_ClearFault(APP_FAULT_L);
+    }
+
+    if (temperature_snapshot.fault_m_active != 0U)
+    {
+        SafetyManager_SetFault(APP_FAULT_M);
+    }
+    else
+    {
+        SafetyManager_ClearFault(APP_FAULT_M);
+    }
 
     SafetyManager_RecalculateSnapshot();
 }
