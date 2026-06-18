@@ -28,6 +28,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "app_controller.h"
+#include "board_io.h"
 
 /* USER CODE END Includes */
 
@@ -49,6 +51,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+static uint32_t g_run_heartbeat_last_toggle_ms;
+static uint8_t g_run_heartbeat_level;
 
 /* USER CODE END PV */
 
@@ -60,6 +64,15 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+static void Main_UpdateRunHeartbeat(uint32_t tick_ms)
+{
+  if ((tick_ms - g_run_heartbeat_last_toggle_ms) >= 50U)
+  {
+    g_run_heartbeat_last_toggle_ms = tick_ms;
+    g_run_heartbeat_level = (g_run_heartbeat_level == 0U) ? 1U : 0U;
+    BoardIO_SetRunHeartbeatOutput(g_run_heartbeat_level);
+  }
+}
 
 /* USER CODE END 0 */
 
@@ -100,6 +113,8 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  BoardIO_Init();
+  AppController_Init(HAL_GetTick());
 
   /* USER CODE END 2 */
 
@@ -110,6 +125,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    uint32_t tick_ms = HAL_GetTick();
+
+    AppController_RunOnce(tick_ms);
+    Main_UpdateRunHeartbeat(tick_ms);
   }
   /* USER CODE END 3 */
 }

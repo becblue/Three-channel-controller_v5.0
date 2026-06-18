@@ -439,6 +439,76 @@
           </Files>
         </Group>
         <Group>
+          <GroupName>Application/User/App</GroupName>
+          <Files>
+            <File>
+              <FileName>board_io.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/board_io.c</FilePath>
+            </File>
+            <File>
+              <FileName>alarm_output.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/alarm_output.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_controller.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/app_controller.c</FilePath>
+            </File>
+            <File>
+              <FileName>channel_request.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/channel_request.c</FilePath>
+            </File>
+            <File>
+              <FileName>display_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/display_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>feedback_monitor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/feedback_monitor.c</FilePath>
+            </File>
+            <File>
+              <FileName>input_filter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/input_filter.c</FilePath>
+            </File>
+            <File>
+              <FileName>log_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/log_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>maintenance_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/maintenance_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>relay_driver.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/relay_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>safety_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/safety_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>temperature_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/temperature_manager.c</FilePath>
+            </File>
+            <File>
+              <FileName>watchdog_manager.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/watchdog_manager.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
           <GroupName>Drivers/STM32F1xx_HAL_Driver</GroupName>
           <Files>
             <File>

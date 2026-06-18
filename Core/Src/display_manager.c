@@ -16,7 +16,17 @@ void DisplayManager_Task(uint32_t tick_ms,
     (void)feedback_snapshot;
     (void)safety_snapshot;
     (void)temperature_snapshot;
-    /* TODO: 实现 128x64 OLED 页面和脏区刷新。 */
+
+    switch (g_display_page)
+    {
+        case DISPLAY_PAGE_LOGO:
+        case DISPLAY_PAGE_SELF_TEST:
+        case DISPLAY_PAGE_MAIN:
+        case DISPLAY_PAGE_ALARM:
+        default:
+            /* TODO: 实现 128x64 OLED 页面和脏区刷新。 */
+            break;
+    }
 }
 
 void DisplayManager_SetPage(DisplayPage_t page)

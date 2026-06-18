@@ -7,6 +7,9 @@ extern "C" {
 
 #include <stdint.h>
 
+/* 启动板级外设运行态，例如 ADC DMA 和风扇 PWM。 */
+void BoardIO_Init(void);
+
 /* 原始输入读取：只返回 MCU 引脚当前电平，不做消抖和业务判断。 */
 uint8_t BoardIO_ReadK1EnRaw(void);
 uint8_t BoardIO_ReadK2EnRaw(void);
