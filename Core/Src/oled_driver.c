@@ -144,8 +144,13 @@ static const uint8_t *OledDriver_GetGlyph(char ch)
     return blank;
 }
 
-void OledDriver_Init(void)
+uint8_t OledDriver_Init(void)
 {
+    if (HAL_I2C_IsDeviceReady(&hi2c1, OLED_I2C_ADDR, 2U, 20U) != HAL_OK)
+    {
+        return 0U;
+    }
+
     g_dirty_start_page = OLED_DIRTY_NONE;
     g_dirty_end_page = OLED_DIRTY_NONE;
 
@@ -176,6 +181,7 @@ void OledDriver_Init(void)
     OledDriver_WriteCommand(0xAFU);
 
     OledDriver_Clear();
+    return 1U;
 }
 
 void OledDriver_Clear(void)

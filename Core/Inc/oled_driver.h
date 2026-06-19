@@ -11,7 +11,7 @@ extern "C" {
 #define OLED_HEIGHT     64U
 #define OLED_PAGE_COUNT 8U
 
-void OledDriver_Init(void);
+uint8_t OledDriver_Init(void);
 void OledDriver_Clear(void);
 void OledDriver_ForceRefresh(void);
 void OledDriver_RefreshDirty(void);

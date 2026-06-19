@@ -8,6 +8,8 @@
 #define DISPLAY_SELF_TEST_MS     3000U
 #define DISPLAY_REFRESH_MS       250U
 #define DISPLAY_ALARM_ROTATE_MS  1000U
+#define DISPLAY_OLED_POWER_READY_MS 300U
+#define DISPLAY_OLED_RETRY_MS       100U
 
 static const uint8_t g_logo_large[27][16] = {
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00},
@@ -72,8 +74,10 @@ static DisplayPage_t g_display_page;
 static uint32_t g_display_start_tick_ms;
 static uint32_t g_last_refresh_tick_ms;
 static uint32_t g_last_alarm_rotate_tick_ms;
+static uint32_t g_last_oled_init_try_ms;
 static uint8_t g_alarm_rotate_index;
 static uint8_t g_last_render_key;
+static uint8_t g_oled_initialized;
 
 static AppChannelState_t DisplayManager_GetChannelState(FeedbackSnapshot_t feedback_snapshot, AppChannel_t channel)
 {
@@ -325,9 +329,10 @@ void DisplayManager_Init(void)
     g_display_start_tick_ms = 0U;
     g_last_refresh_tick_ms = 0U;
     g_last_alarm_rotate_tick_ms = 0U;
+    g_last_oled_init_try_ms = 0U;
     g_alarm_rotate_index = 0U;
     g_last_render_key = 255U;
-    OledDriver_Init();
+    g_oled_initialized = 0U;
 }
 
 void DisplayManager_Task(uint32_t tick_ms,
@@ -344,6 +349,32 @@ void DisplayManager_Task(uint32_t tick_ms,
     }
 
     elapsed_ms = tick_ms - g_display_start_tick_ms;
+
+    if (g_oled_initialized == 0U)
+    {
+        if (elapsed_ms < DISPLAY_OLED_POWER_READY_MS)
+        {
+            return;
+        }
+
+        if ((tick_ms - g_last_oled_init_try_ms) < DISPLAY_OLED_RETRY_MS)
+        {
+            return;
+        }
+
+        g_last_oled_init_try_ms = tick_ms;
+
+        if (OledDriver_Init() == 0U)
+        {
+            return;
+        }
+
+        g_oled_initialized = 1U;
+        g_display_start_tick_ms = tick_ms;
+        g_last_refresh_tick_ms = 0U;
+        g_last_render_key = 255U;
+        elapsed_ms = 0U;
+    }
 
     if (elapsed_ms < DISPLAY_LOGO_MS)
     {
