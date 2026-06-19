@@ -39,9 +39,12 @@ void AppController_RunOnce(uint32_t tick_ms)
     RelayCommand_t relay_command;
 
     InputFilter_Task(tick_ms);
+    WatchdogManager_MarkTaskAlive(WATCHDOG_TASK_INPUT);
+
     MaintenanceManager_Task(tick_ms);
     TemperatureManager_Task(tick_ms);
     RelayDriver_Task(tick_ms);
+    WatchdogManager_MarkTaskAlive(WATCHDOG_TASK_RELAY);
 
     if (RelayDriver_TakeDoneEvent(&relay_done_event) != 0U)
     {
@@ -49,7 +52,10 @@ void AppController_RunOnce(uint32_t tick_ms)
     }
 
     FeedbackMonitor_Task(tick_ms);
+    WatchdogManager_MarkTaskAlive(WATCHDOG_TASK_FEEDBACK);
+
     SafetyManager_Task(tick_ms);
+    WatchdogManager_MarkTaskAlive(WATCHDOG_TASK_SAFETY);
 
     safety_snapshot = SafetyManager_GetSnapshot();
 
@@ -71,6 +77,8 @@ void AppController_RunOnce(uint32_t tick_ms)
                         FeedbackMonitor_GetSnapshot(),
                         safety_snapshot,
                         TemperatureManager_GetSnapshot());
+    WatchdogManager_MarkTaskAlive(WATCHDOG_TASK_OUTPUT);
+
     WatchdogManager_Task(tick_ms);
 }
 
