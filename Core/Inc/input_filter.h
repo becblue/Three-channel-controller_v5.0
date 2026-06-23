@@ -21,6 +21,7 @@ typedef struct
     uint8_t k1_en_active;
     uint8_t k2_en_active;
     uint8_t k3_en_active;
+    uint8_t initial_sample_ready;
     PlcControlState_t plc_state;
 } InputFilterSnapshot_t;
 

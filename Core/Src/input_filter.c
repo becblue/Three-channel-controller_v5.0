@@ -42,6 +42,13 @@ static void InputFilter_UpdateSnapshotFromKenFilters(void)
     g_input_snapshot.k1_en_active = g_ken_filters[0].stable_active;
     g_input_snapshot.k2_en_active = g_ken_filters[1].stable_active;
     g_input_snapshot.k3_en_active = g_ken_filters[2].stable_active;
+
+    if ((g_ken_filters[0].confirm_count >= APP_KEN_CONFIRM_COUNT) &&
+        (g_ken_filters[1].confirm_count >= APP_KEN_CONFIRM_COUNT) &&
+        (g_ken_filters[2].confirm_count >= APP_KEN_CONFIRM_COUNT))
+    {
+        g_input_snapshot.initial_sample_ready = 1U;
+    }
 }
 
 static void InputFilter_UpdateKenOne(KenFilter_t *filter, uint8_t raw_active)
@@ -71,6 +78,7 @@ void InputFilter_Init(void)
     g_input_snapshot.k1_en_active = 0U;
     g_input_snapshot.k2_en_active = 0U;
     g_input_snapshot.k3_en_active = 0U;
+    g_input_snapshot.initial_sample_ready = 0U;
     g_input_snapshot.plc_state = (BoardIO_ReadDcCtrlRaw() != 0U) ? PLC_CONTROL_SUSPECT_LOST : PLC_CONTROL_VALID;
 
     for (index = 0U; index < 3U; index++)

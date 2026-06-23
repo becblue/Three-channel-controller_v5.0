@@ -36,6 +36,7 @@ void AppController_Init(uint32_t tick_ms)
 
 void AppController_RunOnce(uint32_t tick_ms)
 {
+    InputFilterSnapshot_t input_snapshot;
     SafetySnapshot_t safety_snapshot;
     RelayDoneEvent_t relay_done_event;
     ChannelRequest_t channel_request;
@@ -61,11 +62,20 @@ void AppController_RunOnce(uint32_t tick_ms)
     WatchdogManager_MarkTaskAlive(WATCHDOG_TASK_SAFETY);
 
     safety_snapshot = SafetyManager_GetSnapshot();
+    input_snapshot = InputFilter_GetSnapshot();
 
-    channel_request = ChannelRequest_Evaluate(InputFilter_GetSnapshot(),
-                                              FeedbackMonitor_GetSnapshot(),
-                                              RelayDriver_IsBusy(),
-                                              safety_snapshot.relay_action_allowed);
+    channel_request.channel = APP_CHANNEL_NONE;
+    channel_request.action = APP_ACTION_NONE;
+    channel_request.valid = 0U;
+
+    if (input_snapshot.initial_sample_ready != 0U)
+    {
+        channel_request = ChannelRequest_Evaluate(input_snapshot,
+                                                  FeedbackMonitor_GetSnapshot(),
+                                                  RelayDriver_IsBusy(),
+                                                  safety_snapshot.relay_action_allowed);
+    }
+
     if (channel_request.valid != 0U)
     {
         relay_command.channel = channel_request.channel;
