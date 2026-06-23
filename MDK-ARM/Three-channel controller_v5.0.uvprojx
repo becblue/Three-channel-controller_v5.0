@@ -487,6 +487,16 @@
               <FilePath>../Core/Src/log_manager.c</FilePath>
             </File>
             <File>
+              <FileName>flash_w25q128.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/flash_w25q128.c</FilePath>
+            </File>
+            <File>
+              <FileName>persistent_log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/persistent_log.c</FilePath>
+            </File>
+            <File>
               <FileName>maintenance_manager.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/maintenance_manager.c</FilePath>
@@ -495,6 +505,11 @@
               <FileName>relay_driver.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/relay_driver.c</FilePath>
+            </File>
+            <File>
+              <FileName>reset_reason_store.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/reset_reason_store.c</FilePath>
             </File>
             <File>
               <FileName>safety_manager.c</FileName>

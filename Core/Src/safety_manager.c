@@ -2,9 +2,11 @@
 
 #include "feedback_monitor.h"
 #include "input_filter.h"
+#include "log_manager.h"
 #include "temperature_manager.h"
 
 static SafetySnapshot_t g_safety_snapshot;
+static uint32_t g_logged_fault_bits;
 
 static AppFaultSeverity_t SafetyManager_GetFaultSeverity(AppFaultId_t fault_id)
 {
@@ -143,6 +145,7 @@ void SafetyManager_Init(void)
     g_safety_snapshot.highest_severity = APP_FAULT_SEVERITY_NONE;
     g_safety_snapshot.any_fault_active = 0U;
     g_safety_snapshot.relay_action_allowed = 1U;
+    g_logged_fault_bits = 0U;
 }
 
 void SafetyManager_Task(uint32_t tick_ms)
@@ -213,6 +216,31 @@ void SafetyManager_Task(uint32_t tick_ms)
     }
 
     SafetyManager_RecalculateSnapshot();
+
+    if (g_logged_fault_bits != g_safety_snapshot.active_fault_bits)
+    {
+        uint32_t changed_bits = g_logged_fault_bits ^ g_safety_snapshot.active_fault_bits;
+        uint32_t fault_index;
+
+        for (fault_index = 0U; fault_index < (uint32_t)APP_FAULT_COUNT; fault_index++)
+        {
+            uint32_t fault_bit = (1UL << fault_index);
+
+            if ((changed_bits & fault_bit) != 0U)
+            {
+                if ((g_safety_snapshot.active_fault_bits & fault_bit) != 0U)
+                {
+                    LogManager_Record(LOG_EVENT_FAULT_SET, (uint16_t)fault_index, 0U);
+                }
+                else
+                {
+                    LogManager_Record(LOG_EVENT_FAULT_CLEAR, (uint16_t)fault_index, 0U);
+                }
+            }
+        }
+
+        g_logged_fault_bits = g_safety_snapshot.active_fault_bits;
+    }
 }
 
 void SafetyManager_SetFault(AppFaultId_t fault_id)

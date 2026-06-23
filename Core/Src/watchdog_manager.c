@@ -2,6 +2,7 @@
 
 #include "app_config.h"
 #include "main.h"
+#include "reset_reason_store.h"
 
 #define WATCHDOG_ALL_TASK_MASK       ((1UL << (uint32_t)WATCHDOG_TASK_COUNT) - 1UL)
 #define WATCHDOG_IWDG_KEY_ENABLE     0xCCCCU
@@ -57,7 +58,7 @@ static void WatchdogManager_FeedHardware(void)
 
 static void WatchdogManager_CheckResetReason(void)
 {
-    if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST) != RESET)
+    if (ResetReasonStore_WasIwdgReset() != 0U)
     {
         g_iwdg_reset_detected = 1U;
     }
@@ -66,7 +67,6 @@ static void WatchdogManager_CheckResetReason(void)
         g_iwdg_reset_detected = 0U;
     }
 
-    __HAL_RCC_CLEAR_RESET_FLAGS();
 }
 
 void WatchdogManager_Init(void)
@@ -130,6 +130,7 @@ void WatchdogManager_Panic(WatchdogPanicReason_t reason)
     if (g_panic_reason == WATCHDOG_PANIC_NONE)
     {
         g_panic_reason = reason;
+        ResetReasonStore_SaveWatchdogPanic(reason);
     }
 }
 

@@ -21,16 +21,22 @@ typedef enum
 
 typedef struct
 {
+    uint32_t sequence;
     uint32_t time_s;
     uint16_t event_id;
     uint16_t param;
     uint32_t detail;
+    uint32_t extra;
 } AppLogRecord_t;
 
 void LogManager_Init(void);
 void LogManager_Task(uint32_t tick_ms);
 void LogManager_Record(LogEventId_t event_id, uint16_t param, uint32_t detail);
 void LogManager_Clear(void);
+uint16_t LogManager_GetRecordCount(void);
+uint16_t LogManager_GetPageCount(void);
+void LogManager_PrintPage(uint16_t page_index);
+void LogManager_StopPrint(void);
 
 #ifdef __cplusplus
 }

@@ -53,11 +53,14 @@ extern "C" {
 
 /* 维护按键和日志参数：两颗按键仅用于日志串口操作，不参与蜂鸣器静音。 */
 #define APP_MAINT_KEY_CONFIRM_MS       50U
+#define APP_MAINT_KEY_SHORT_MAX_MS     800U
 #define APP_MAINT_KEY_LONG_MS          3000U
 #define APP_LOG_ENABLE                 1
 #define APP_LOG_MAX_RECORDS            2000U
 #define APP_LOG_PAGE_SIZE              50U
 #define APP_LOG_TIME_UNIT_MS           1000U
+#define APP_FLASH_LOG_AREA_SIZE        (512UL * 1024UL)
+#define APP_FLASH_LOG_RECORD_SIZE      32U
 
 #ifdef __cplusplus
 }

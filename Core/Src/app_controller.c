@@ -5,8 +5,10 @@
 #include "display_manager.h"
 #include "feedback_monitor.h"
 #include "input_filter.h"
+#include "log_manager.h"
 #include "maintenance_manager.h"
 #include "relay_driver.h"
+#include "reset_reason_store.h"
 #include "safety_manager.h"
 #include "temperature_manager.h"
 #include "watchdog_manager.h"
@@ -19,6 +21,7 @@ void AppController_Init(uint32_t tick_ms)
 
     g_app_state = APP_STATE_BOOT;
 
+    ResetReasonStore_Init();
     InputFilter_Init();
     ChannelRequest_Init();
     RelayDriver_Init();
@@ -67,7 +70,12 @@ void AppController_RunOnce(uint32_t tick_ms)
     {
         relay_command.channel = channel_request.channel;
         relay_command.action = channel_request.action;
-        (void)RelayDriver_Start(relay_command, tick_ms);
+        if (RelayDriver_Start(relay_command, tick_ms) == APP_RESULT_OK)
+        {
+            LogManager_Record(LOG_EVENT_CHANNEL_ACTION,
+                              (uint16_t)relay_command.channel,
+                              (uint32_t)relay_command.action);
+        }
     }
 
     g_app_state = (safety_snapshot.any_fault_active != 0U) ? APP_STATE_ALARM : APP_STATE_STANDBY;
